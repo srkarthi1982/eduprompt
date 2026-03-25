@@ -1,0 +1,164 @@
+---
+import AppShell from "../../layouts/AppShell.astro";
+import AvMiniAppBar from "../../components/AvMiniAppBar.astro";
+import { AvButton, AvCard, AvContainer, AvDrawer, AvInput, AvTextarea } from "@ansiversa/components";
+import {
+  createEduPromptRecord,
+  getSummary,
+  listEduPrompts,
+  setEduPromptStatus,
+  toggleEduPromptFavoriteRecord,
+  updateEduPromptRecord,
+} from "../../lib/eduprompt";
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect("/");
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const intent = String(form.get("intent") ?? "");
+  const id = Number(form.get("id") ?? "0");
+
+  try {
+    if (intent === "create") {
+      await createEduPromptRecord(user.id, {
+        title: String(form.get("title") ?? ""),
+        subject: String(form.get("subject") ?? ""),
+        level: String(form.get("level") ?? ""),
+        category: String(form.get("category") ?? ""),
+        promptText: String(form.get("promptText") ?? ""),
+        expectedOutputNotes: String(form.get("expectedOutputNotes") ?? ""),
+        teachingNotes: String(form.get("teachingNotes") ?? ""),
+      });
+      return Astro.redirect("/app?flash=Prompt%20created&ok=1");
+    }
+
+    if (intent === "update" && id) {
+      await updateEduPromptRecord(user.id, id, {
+        title: String(form.get("title") ?? ""),
+        subject: String(form.get("subject") ?? ""),
+        level: String(form.get("level") ?? ""),
+        category: String(form.get("category") ?? ""),
+        promptText: String(form.get("promptText") ?? ""),
+        expectedOutputNotes: String(form.get("expectedOutputNotes") ?? ""),
+        teachingNotes: String(form.get("teachingNotes") ?? ""),
+      });
+      return Astro.redirect("/app?flash=Prompt%20updated&ok=1");
+    }
+
+    if (intent === "toggle-favorite" && id) {
+      await toggleEduPromptFavoriteRecord(user.id, id);
+      return Astro.redirect("/app?flash=Favorite%20updated&ok=1");
+    }
+
+    if (intent === "archive" && id) {
+      await setEduPromptStatus(user.id, id, "archived");
+      return Astro.redirect("/app?flash=Prompt%20archived&ok=1");
+    }
+
+    if (intent === "restore" && id) {
+      await setEduPromptStatus(user.id, id, "active");
+      return Astro.redirect("/app?flash=Prompt%20restored&ok=1");
+    }
+  } catch {
+    return Astro.redirect("/app?flash=Action%20failed&ok=0");
+  }
+}
+
+const prompts = await listEduPrompts(user.id);
+const summary = await getSummary(user.id);
+const flash = Astro.url.searchParams.get("flash") ?? "";
+const ok = Astro.url.searchParams.get("ok") === "1";
+
+const subjects = Array.from(new Set(prompts.map((p) => p.subject).filter(Boolean)));
+const levels = Array.from(new Set(prompts.map((p) => p.level).filter(Boolean)));
+const categories = Array.from(new Set(prompts.map((p) => p.category).filter(Boolean)));
+---
+
+<AppShell title="EduPrompt Workspace" description="Manage teaching prompts.">
+  <AvMiniAppBar />
+  <main
+    x-data
+    x-init={`$store.eduprompt.init(${JSON.stringify({ prompts, flash: flash ? { type: ok ? "success" : "error", message: flash } : {} })})`}
+    class="py-8"
+  >
+    <AvContainer size="wide" className="px-4 space-y-6">
+      <header class="flex flex-wrap gap-3 justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-semibold text-white">EduPrompt Workspace</h1>
+          <p class="text-slate-400">Organize prompts for classroom delivery.</p>
+        </div>
+        <AvButton x-on:click="$store.eduprompt.openCreateDrawer()">Create Prompt</AvButton>
+      </header>
+
+      <div x-show="$store.eduprompt.flash.message" class="rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-sm" :class="$store.eduprompt.flash.type === 'success' ? 'text-emerald-300' : 'text-rose-300'">
+        <span x-text="$store.eduprompt.flash.message"></span>
+      </div>
+
+      <section class="grid md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <AvCard className="p-4"><p class="text-xs text-slate-400">Total</p><p class="text-2xl text-white">{summary.total}</p></AvCard>
+        <AvCard className="p-4"><p class="text-xs text-slate-400">Active</p><p class="text-2xl text-white">{summary.active}</p></AvCard>
+        <AvCard className="p-4"><p class="text-xs text-slate-400">Favorites</p><p class="text-2xl text-white">{summary.favorites}</p></AvCard>
+        <AvCard className="p-4"><p class="text-xs text-slate-400">Archived</p><p class="text-2xl text-white">{summary.archived}</p></AvCard>
+        <AvCard className="p-4"><p class="text-xs text-slate-400">Subjects</p><p class="text-2xl text-white">{summary.subjectCount}</p></AvCard>
+        <AvCard className="p-4"><p class="text-xs text-slate-400">Updated (7d)</p><p class="text-2xl text-white">{summary.recentlyUpdated}</p></AvCard>
+      </section>
+
+      <section class="space-y-3">
+        <div class="flex flex-wrap gap-2">
+          <AvButton variant="ghost" x-on:click="$store.eduprompt.setTab('overview')">Overview</AvButton>
+          <AvButton variant="ghost" x-on:click="$store.eduprompt.setTab('prompts')">Prompts</AvButton>
+          <AvButton variant="ghost" x-on:click="$store.eduprompt.setTab('favorites')">Favorites</AvButton>
+          <AvButton variant="ghost" x-on:click="$store.eduprompt.setTab('archived')">Archived</AvButton>
+        </div>
+
+        <div class="grid md:grid-cols-4 gap-2">
+          <input class="av-input" placeholder="Search title, subject, category" x-model="$store.eduprompt.search" />
+          <select class="av-input" x-model="$store.eduprompt.filters.subject"><option value="">All subjects</option>{subjects.map((s) => <option value={s}>{s}</option>)}</select>
+          <select class="av-input" x-model="$store.eduprompt.filters.level"><option value="">All levels</option>{levels.map((s) => <option value={s}>{s}</option>)}</select>
+          <select class="av-input" x-model="$store.eduprompt.filters.category"><option value="">All categories</option>{categories.map((s) => <option value={s}>{s}</option>)}</select>
+        </div>
+
+        <div class="space-y-3">
+          <template x-for="prompt in $store.eduprompt.filteredPrompts" :key="prompt.id">
+            <article class="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+              <div class="flex justify-between gap-3 items-start">
+                <div>
+                  <a class="text-lg font-medium text-white hover:text-cyan-300" :href="`/app/prompts/${prompt.id}`" x-text="prompt.title"></a>
+                  <p class="text-sm text-slate-400 mt-1" x-text="[prompt.subject, prompt.level, prompt.category].filter(Boolean).join(' · ')"></p>
+                </div>
+                <div class="flex gap-2">
+                  <form method="POST"><input type="hidden" name="intent" value="toggle-favorite" /><input type="hidden" name="id" :value="prompt.id" /><button class="av-btn-ghost" x-text="prompt.isFavorite ? '★' : '☆'"></button></form>
+                  <form method="POST"><input type="hidden" name="intent" :value="prompt.status === 'archived' ? 'restore' : 'archive'" /><input type="hidden" name="id" :value="prompt.id" /><button class="av-btn-outline" x-text="prompt.status === 'archived' ? 'Restore' : 'Archive'"></button></form>
+                </div>
+              </div>
+            </article>
+          </template>
+
+          <div x-show="$store.eduprompt.filteredPrompts.length === 0" class="rounded-xl border border-slate-800 bg-slate-900/50 p-10 text-center text-slate-400">
+            No prompts match your current search or filter.
+          </div>
+        </div>
+      </section>
+    </AvContainer>
+
+    <div x-show="$store.eduprompt.drawerOpen" x-cloak>
+      <AvDrawer title="Create prompt" description="Add a teaching prompt to your library.">
+        <form method="POST" class="space-y-3" x-on:submit="$store.eduprompt.beginSubmit()">
+          <input type="hidden" name="intent" value="create" />
+          <AvInput name="title" label="Title" required />
+          <AvInput name="subject" label="Subject" />
+          <AvInput name="level" label="Level" />
+          <AvInput name="category" label="Category" />
+          <AvTextarea name="promptText" label="Prompt text" required rows={6} />
+          <AvTextarea name="expectedOutputNotes" label="Expected output notes" rows={3} />
+          <AvTextarea name="teachingNotes" label="Teaching notes" rows={3} />
+          <div slot="footer" class="flex gap-2">
+            <AvButton type="button" variant="ghost" x-on:click="$store.eduprompt.closeDrawer()">Cancel</AvButton>
+            <AvButton type="submit">Save Prompt</AvButton>
+          </div>
+        </form>
+      </AvDrawer>
+    </div>
+  </main>
+</AppShell>

@@ -1,6 +1,6 @@
 import type { Alpine } from "alpinejs";
+import { registerEduPromptStore } from "./stores/eduprompt";
 
 export default function initAlpine(Alpine: Alpine) {
-  // Intentionally minimal.
-  // Each app will register its own stores here later.
+  registerEduPromptStore(Alpine);
 }

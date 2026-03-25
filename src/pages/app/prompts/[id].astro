@@ -1,0 +1,128 @@
+---
+import AppShell from "../../../layouts/AppShell.astro";
+import AvMiniAppBar from "../../../components/AvMiniAppBar.astro";
+import { AvButton, AvCard, AvContainer, AvDrawer, AvInput, AvTextarea } from "@ansiversa/components";
+import { getEduPromptDetail, setEduPromptStatus, toggleEduPromptFavoriteRecord, updateEduPromptRecord } from "../../../lib/eduprompt";
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect("/");
+
+const id = Number(Astro.params.id ?? "0");
+if (!id) return Astro.redirect("/app");
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const intent = String(form.get("intent") ?? "");
+
+  try {
+    if (intent === "update") {
+      await updateEduPromptRecord(user.id, id, {
+        title: String(form.get("title") ?? ""),
+        subject: String(form.get("subject") ?? ""),
+        level: String(form.get("level") ?? ""),
+        category: String(form.get("category") ?? ""),
+        promptText: String(form.get("promptText") ?? ""),
+        expectedOutputNotes: String(form.get("expectedOutputNotes") ?? ""),
+        teachingNotes: String(form.get("teachingNotes") ?? ""),
+      });
+      return Astro.redirect(`/app/prompts/${id}?flash=Prompt%20updated&ok=1`);
+    }
+    if (intent === "toggle-favorite") {
+      await toggleEduPromptFavoriteRecord(user.id, id);
+      return Astro.redirect(`/app/prompts/${id}?flash=Favorite%20updated&ok=1`);
+    }
+    if (intent === "archive") {
+      await setEduPromptStatus(user.id, id, "archived");
+      return Astro.redirect(`/app/prompts/${id}?flash=Prompt%20archived&ok=1`);
+    }
+    if (intent === "restore") {
+      await setEduPromptStatus(user.id, id, "active");
+      return Astro.redirect(`/app/prompts/${id}?flash=Prompt%20restored&ok=1`);
+    }
+  } catch {
+    return Astro.redirect(`/app/prompts/${id}?flash=Action%20failed&ok=0`);
+  }
+}
+
+let prompt;
+try {
+  prompt = await getEduPromptDetail(user.id, id);
+} catch {
+  return Astro.redirect("/app");
+}
+
+const flash = Astro.url.searchParams.get("flash") ?? "";
+const ok = Astro.url.searchParams.get("ok") === "1";
+---
+
+<AppShell title={prompt.title} description="EduPrompt detail">
+  <AvMiniAppBar />
+  <main class="py-8" x-data="{ editOpen: false }">
+    <AvContainer size="wide" className="px-4 space-y-6">
+      <a href="/app" class="text-sm text-cyan-300 hover:text-cyan-200">← Back to workspace</a>
+
+      {flash && (
+        <div class={`rounded-lg border px-4 py-3 text-sm ${ok ? "border-emerald-800 text-emerald-300" : "border-rose-800 text-rose-300"}`}>
+          {flash}
+        </div>
+      )}
+
+      <AvCard className="p-6 space-y-5">
+        <div class="flex justify-between gap-4 items-start">
+          <div>
+            <h1 class="text-3xl text-white font-semibold">{prompt.title}</h1>
+            <p class="text-slate-400 mt-2">{[prompt.subject, prompt.level, prompt.category].filter(Boolean).join(" · ") || "No tags yet"}</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <form method="POST"><input type="hidden" name="intent" value="toggle-favorite" /><AvButton type="submit" variant="ghost">{prompt.isFavorite ? "★ Favorited" : "☆ Favorite"}</AvButton></form>
+            <AvButton type="button" variant="outline" x-on:click="editOpen = true">Edit</AvButton>
+            <form method="POST"><input type="hidden" name="intent" value={prompt.status === "archived" ? "restore" : "archive"} /><AvButton type="submit" variant="outline">{prompt.status === "archived" ? "Restore" : "Archive"}</AvButton></form>
+          </div>
+        </div>
+
+        <section>
+          <h2 class="text-sm uppercase tracking-wide text-slate-400 mb-2">Prompt text</h2>
+          <div class="rounded-lg border border-slate-800 bg-slate-950/70 p-4 whitespace-pre-wrap text-slate-100 leading-7">{prompt.promptText}</div>
+        </section>
+
+        {prompt.expectedOutputNotes && (
+          <section>
+            <h2 class="text-sm uppercase tracking-wide text-slate-400 mb-2">Expected output notes</h2>
+            <div class="rounded-lg border border-slate-800 bg-slate-950/70 p-4 whitespace-pre-wrap text-slate-200">{prompt.expectedOutputNotes}</div>
+          </section>
+        )}
+
+        {prompt.teachingNotes && (
+          <section>
+            <h2 class="text-sm uppercase tracking-wide text-slate-400 mb-2">Teaching notes</h2>
+            <div class="rounded-lg border border-slate-800 bg-slate-950/70 p-4 whitespace-pre-wrap text-slate-200">{prompt.teachingNotes}</div>
+          </section>
+        )}
+
+        <footer class="text-xs text-slate-500 flex gap-4">
+          <span>Created: {new Date(prompt.createdAt).toLocaleString()}</span>
+          <span>Updated: {new Date(prompt.updatedAt).toLocaleString()}</span>
+        </footer>
+      </AvCard>
+
+      <div x-show="editOpen" x-cloak>
+        <AvDrawer title="Edit prompt" description="Refine and maintain this prompt.">
+          <form method="POST" class="space-y-3">
+            <input type="hidden" name="intent" value="update" />
+            <AvInput name="title" label="Title" required value={prompt.title} />
+            <AvInput name="subject" label="Subject" value={prompt.subject ?? ""} />
+            <AvInput name="level" label="Level" value={prompt.level ?? ""} />
+            <AvInput name="category" label="Category" value={prompt.category ?? ""} />
+            <AvTextarea name="promptText" label="Prompt text" required rows={6} value={prompt.promptText} />
+            <AvTextarea name="expectedOutputNotes" label="Expected output notes" rows={3} value={prompt.expectedOutputNotes ?? ""} />
+            <AvTextarea name="teachingNotes" label="Teaching notes" rows={3} value={prompt.teachingNotes ?? ""} />
+            <div slot="footer" class="flex gap-2">
+              <AvButton type="button" variant="ghost" x-on:click="editOpen = false">Cancel</AvButton>
+              <AvButton type="submit">Save changes</AvButton>
+            </div>
+          </form>
+        </AvDrawer>
+      </div>
+    </AvContainer>
+  </main>
+</AppShell>
