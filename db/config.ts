@@ -1,16 +1,8 @@
 import { defineDb } from "astro:db";
-import {
-  PromptTemplates,
-  GeneratedPrompts,
-  UserPromptFavorites,
-  PromptJobs,
-} from "./tables";
+import { EduPrompts } from "./tables";
 
 export default defineDb({
   tables: {
-    PromptTemplates,
-    GeneratedPrompts,
-    UserPromptFavorites,
-    PromptJobs,
+    EduPrompts,
   },
 });

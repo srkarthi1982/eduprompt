@@ -26,5 +26,7 @@ MANDATORY: After completing each task, update this repo’s AGENTS.md Task Log (
 
 ## Task Log (Recent)
 - Keep newest first; include date and short summary.
+- 2026-03-25 Implemented EduPrompt V1: Astro DB EduPrompts schema + indexed ownership/status taxonomy, authenticated CRUD/archive/favorite actions, Alpine global store, /app workspace + /app/prompts/[id] detail flows, dashboard summary webhook + high-signal notification hooks, middleware route protection updates, and typecheck/build validation.
+- 2026-03-25 Key decisions: manual prompt library only (no AI execution/sharing), archive-over-delete policy, SSR-first form actions with Alpine UI filtering, parent dashboard payload for appId=eduprompt, and notifications only for first prompt/first favorite/25 milestone.
 - 2026-02-09 Added repo-level AGENTS.md enforcement contract (workspace reference + mandatory task-log update rule).
 - 2026-02-09 Initialized repo AGENTS baseline for single-repo Codex/AI safety.

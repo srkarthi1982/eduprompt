@@ -1,0 +1,32 @@
+---
+import { AvContainer, AvButton } from "@ansiversa/components";
+
+interface Props {
+  appId?: string;
+  title?: string;
+  logoPath?: string;
+}
+
+const {
+  appId = "eduprompt",
+  title = "EduPrompt",
+  logoPath = "/favicon.svg",
+} = Astro.props as Props;
+---
+
+<div class="border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+  <AvContainer size="wide" className="px-4 py-3 flex items-center justify-between gap-3">
+    <a href="/app" class="flex items-center gap-3 text-slate-100 hover:text-white transition">
+      <img src={logoPath} alt={`${title} logo`} class="h-7 w-7 rounded" />
+      <div>
+        <p class="text-sm font-semibold">{title}</p>
+        <p class="text-xs text-slate-400">Mini App · {appId}</p>
+      </div>
+    </a>
+
+    <div class="flex items-center gap-2">
+      <AvButton href="/">Home</AvButton>
+      <AvButton href="/app" variant="outline">Workspace</AvButton>
+    </div>
+  </AvContainer>
+</div>

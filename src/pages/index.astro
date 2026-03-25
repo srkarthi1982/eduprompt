@@ -1,93 +1,32 @@
 ---
 import AppShell from "../layouts/AppShell.astro";
-import { AvContainer, AvButton } from "@ansiversa/components";
-
-const title = "EduPrompt – Ansiversa";
-const description = "Generate teaching prompts in seconds.";
+import { AvButton, AvCard, AvContainer } from "@ansiversa/components";
+import AvMiniAppBar from "../components/AvMiniAppBar.astro";
 ---
 
-<AppShell title={title} description={description}>
-  <!-- Hero -->
-  <section class="av-hero">
-    <AvContainer size="narrow" className="av-hero__content--narrow">
-      <div class="av-hero__content">
-        <div class="av-kicker">
-          <span>Learning · Ansiversa Mini App</span>
+<AppShell title="EduPrompt | Ansiversa" description="Premium educator prompt library for everyday teaching.">
+  <AvMiniAppBar />
+
+  <section class="py-20">
+    <AvContainer size="wide" className="px-4 grid lg:grid-cols-2 gap-10 items-center">
+      <div class="space-y-5">
+        <p class="text-sm uppercase tracking-widest text-cyan-300">Ansiversa · Educator productivity</p>
+        <h1 class="text-4xl md:text-5xl font-semibold text-white leading-tight">Build a calm, organized prompt library for your classroom.</h1>
+        <p class="text-slate-300 text-lg">EduPrompt V1 keeps your teaching prompts structured by subject, level, and category—without clutter or complexity.</p>
+        <div class="flex gap-3">
+          <AvButton href="/app">Open Workspace</AvButton>
         </div>
-        <h1 class="av-gradient-text">EduPrompt</h1>
-        <p>
-          Generate teaching prompts in seconds.
-        </p>
       </div>
-      <div class="av-cta-row">
-        <AvButton href="https://eduprompt.ansiversa.com">Launch EduPrompt</AvButton>
-      </div>
-    </AvContainer>
-  </section>
 
-  <!-- Problem -->
-  <section class="av-section">
-    <AvContainer size="narrow">
-      <div class="av-section-header">
-        <h2 class="av-section-title">The problem it solves</h2>
-        <p class="av-section-lead">
-          Learning tools are scattered across tabs, apps, and messy notes.
-        </p>
-      </div>
-      <div class="av-section-body space-y-3 text-slate-300">
-        <p>EduPrompt focuses on one part of your learning flow and keeps it clear.</p>
-      </div>
-    </AvContainer>
-  </section>
-
-  <!-- Why this mini app -->
-  <section class="av-section">
-    <AvContainer size="narrow">
-      <div class="av-section-header">
-        <h2 class="av-section-title">Why EduPrompt feels different</h2>
-        <p class="av-section-lead">
-          A focused mini app inside the larger Ansiversa ecosystem.
-        </p>
-      </div>
-      <div class="av-section-body">
+      <AvCard variant="soft" className="p-6 space-y-4">
+        <h2 class="text-xl text-white font-semibold">What you can do in V1</h2>
         <ul class="space-y-2 text-slate-300 list-disc list-inside">
-          <li>Designed specifically for learners, students, and educators.</li>
-          <li>Removes distractions so you can focus on actual understanding.</li>
-          <li>Built on the fast, unified Ansiversa ecosystem.</li>
+          <li>Create and edit educational prompts.</li>
+          <li>Organize by subject, level, and category.</li>
+          <li>Star favorites and archive old prompts.</li>
+          <li>Quickly search and filter your library.</li>
         </ul>
-      </div>
-    </AvContainer>
-  </section>
-
-  <!-- How it works -->
-  <section class="av-section">
-    <AvContainer size="narrow">
-      <div class="av-section-header">
-        <h2 class="av-section-title">How it works</h2>
-        <p class="av-section-lead">
-          Simple, clear steps so people can start in under a minute.
-        </p>
-      </div>
-      <ol class="av-section-body space-y-2 text-slate-300 list-decimal list-inside">
-        <li>Open EduPrompt in your browser.</li>
-        <li>Add the topic, content, or material you want to work with.</li>
-        <li>Use the focused tools to learn, revise, or practice within minutes.</li>
-      </ol>
-    </AvContainer>
-  </section>
-
-  <!-- Final CTA -->
-  <section class="av-section">
-    <AvContainer size="narrow">
-      <div class="av-section-header">
-        <h2 class="av-section-title">Ready to try EduPrompt?</h2>
-        <p class="av-section-lead">
-          Open the app, follow the simple flow, and let it handle the heavy lifting.
-        </p>
-      </div>
-      <div class="av-cta-row">
-        <AvButton href="https://eduprompt.ansiversa.com">Start with EduPrompt</AvButton>
-      </div>
+      </AvCard>
     </AvContainer>
   </section>
 </AppShell>
