@@ -79,7 +79,7 @@ const categories = Array.from(new Set(prompts.map((p) => p.category).filter(Bool
   <AvMiniAppBar />
   <main
     x-data
-    x-init={`$store.eduprompt.init(${JSON.stringify({ prompts, flash: flash ? { type: ok ? "success" : "error", message: flash } : {} })})`}
+    x-init={`$store.eduprompt.bootstrap(${JSON.stringify({ prompts, flash: flash ? { type: ok ? "success" : "error", message: flash } : {} })})`}
     class="py-8"
   >
     <AvContainer size="wide" className="px-4 space-y-6">
