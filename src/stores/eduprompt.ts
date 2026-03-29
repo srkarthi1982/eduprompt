@@ -11,8 +11,32 @@ type Prompt = {
   updatedAt: string | Date;
 };
 
+type EduPromptStore = {
+  prompts: Prompt[];
+  search: string;
+  filters: {
+    subject: string;
+    level: string;
+    category: string;
+  };
+  activeTab: string;
+  activePromptDetail: Prompt | null;
+  drawerOpen: boolean;
+  isSubmitting: boolean;
+  isLoading: boolean;
+  flash: { type: string; message: string };
+  init(payload: { prompts: Prompt[]; flash?: { type?: string; message?: string } }): void;
+  readonly filteredPrompts: Prompt[];
+  setTab(tab: string): void;
+  openCreateDrawer(): void;
+  openEditDrawer(prompt: Prompt): void;
+  closeDrawer(): void;
+  beginSubmit(): void;
+  endSubmit(): void;
+};
+
 export function registerEduPromptStore(Alpine: Alpine) {
-  Alpine.store("eduprompt", {
+  const store: EduPromptStore = {
     prompts: [] as Prompt[],
     search: "",
     filters: {
@@ -28,54 +52,56 @@ export function registerEduPromptStore(Alpine: Alpine) {
     flash: { type: "", message: "" },
 
     init(payload: { prompts: Prompt[]; flash?: { type?: string; message?: string } }) {
-      this.prompts = payload.prompts ?? [];
-      this.flash = {
+      store.prompts = payload.prompts ?? [];
+      store.flash = {
         type: payload.flash?.type ?? "",
         message: payload.flash?.message ?? "",
       };
     },
 
     get filteredPrompts() {
-      return this.prompts.filter((item) => {
-        const q = this.search.trim().toLowerCase();
+      return store.prompts.filter((item: Prompt) => {
+        const q = store.search.trim().toLowerCase();
         if (q && !`${item.title} ${item.subject ?? ""} ${item.category ?? ""}`.toLowerCase().includes(q)) {
           return false;
         }
-        if (this.filters.subject && (item.subject ?? "") !== this.filters.subject) return false;
-        if (this.filters.level && (item.level ?? "") !== this.filters.level) return false;
-        if (this.filters.category && (item.category ?? "") !== this.filters.category) return false;
+        if (store.filters.subject && (item.subject ?? "") !== store.filters.subject) return false;
+        if (store.filters.level && (item.level ?? "") !== store.filters.level) return false;
+        if (store.filters.category && (item.category ?? "") !== store.filters.category) return false;
 
-        if (this.activeTab === "favorites") return item.isFavorite && item.status === "active";
-        if (this.activeTab === "archived") return item.status === "archived";
-        if (this.activeTab === "prompts") return item.status === "active";
+        if (store.activeTab === "favorites") return item.isFavorite && item.status === "active";
+        if (store.activeTab === "archived") return item.status === "archived";
+        if (store.activeTab === "prompts") return item.status === "active";
         return true;
       });
     },
 
     setTab(tab: string) {
-      this.activeTab = tab;
+      store.activeTab = tab;
     },
 
     openCreateDrawer() {
-      this.activePromptDetail = null;
-      this.drawerOpen = true;
+      store.activePromptDetail = null;
+      store.drawerOpen = true;
     },
 
     openEditDrawer(prompt: Prompt) {
-      this.activePromptDetail = prompt;
-      this.drawerOpen = true;
+      store.activePromptDetail = prompt;
+      store.drawerOpen = true;
     },
 
     closeDrawer() {
-      this.drawerOpen = false;
+      store.drawerOpen = false;
     },
 
     beginSubmit() {
-      this.isSubmitting = true;
+      store.isSubmitting = true;
     },
 
     endSubmit() {
-      this.isSubmitting = false;
+      store.isSubmitting = false;
     },
-  });
+  };
+
+  Alpine.store("eduprompt", store);
 }
