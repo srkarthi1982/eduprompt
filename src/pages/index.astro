@@ -1,32 +1,157 @@
 ---
 import AppShell from "../layouts/AppShell.astro";
-import { AvButton, AvCard, AvContainer } from "@ansiversa/components";
-import AvMiniAppBar from "../components/AvMiniAppBar.astro";
+import LandingPageStandard from "../components/landing/LandingPageStandard.astro";
+import type { LandingPageContent } from "../lib/landing";
+
+const title = "EduPrompt | Ansiversa";
+const description = "Organize a personal teaching prompt library with favorites, archive, and safe detail review.";
+const rootAppUrl = Astro.locals.rootAppUrl ?? "https://ansiversa.com";
+const appUrl = new URL("/app", Astro.url).toString();
+const signInUrl = new URL("/login", rootAppUrl);
+signInUrl.searchParams.set("returnTo", appUrl);
+const startHref = Astro.locals.isAuthenticated ? "/app" : signInUrl.toString();
+
+const landingContent: LandingPageContent = {
+  categoryLabel: "Education Workspace",
+  appLabel: "Authenticated DB-backed workspace",
+  title: "Keep teaching prompts organized instead of rebuilding them from memory.",
+  subtitle:
+    "Create, edit, favorite, archive, and review teaching prompts in a private prompt library built for manual organization, not AI execution.",
+  heroBullets: [
+    "Save prompts with subject, level, and category context in one personal library",
+    "Use favorites, tabs, and filters to surface the prompts you need most often",
+    "Archive and restore older prompts without deleting the teaching record",
+  ],
+  primaryCta: {
+    label: Astro.locals.isAuthenticated ? "Open Workspace" : "Sign in to Open",
+    href: startHref,
+  },
+  secondaryCta: {
+    label: "See Workflow",
+    href: "#workflow",
+    variant: "ghost",
+  },
+  heroNote:
+    "Current V1 is a manual prompt library for one user. It does not execute prompts, generate AI output, or run as a collaborative teaching platform.",
+  heroPanel: {
+    eyebrow: "Prompt flow",
+    title: "Create → Organize → Review",
+    steps: [
+      "1. Save the prompt in your protected library",
+      "2. Favorite, filter, and archive prompts as the collection grows",
+      "3. Open the detail route when the prompt needs full review or edits",
+    ],
+    meta: [
+      { value: "DB", label: "Persistence" },
+      { value: "Per-user", label: "Ownership" },
+    ],
+  },
+  features: {
+    title: "What EduPrompt gives you in V1",
+    lead:
+      "The product is built for organizing a private teaching prompt library, not for AI prompt execution or shared prompt collaboration.",
+    items: [
+      {
+        title: "Structured prompt records",
+        description:
+          "Keep the prompt text and teaching metadata together in one owner-scoped record instead of spreading prompts across files and notes.",
+      },
+      {
+        title: "Favorite and filter control",
+        description:
+          "Use tabs, favorites, and subject or level filters to keep the most useful prompts easy to surface.",
+      },
+      {
+        title: "Safe detail editing",
+        description:
+          "Open the prompt detail route when you want to review or edit the full record without losing the workspace context.",
+      },
+      {
+        title: "Archive-safe prompt history",
+        description:
+          "Move older prompts out of the active set while keeping them available when you need them again.",
+      },
+    ],
+  },
+  pillars: {
+    title: "Why this works better than a loose folder of teaching prompts",
+    lead:
+      "The product stays disciplined on purpose: one protected prompt library, one clear record model, and one place to keep your teaching prompts organized over time.",
+    items: [
+      {
+        title: "Truthful product boundary",
+        description:
+          "This is a manual prompt library and organizer, not an AI execution layer and not a collaborative teaching platform.",
+      },
+      {
+        title: "Prompt-library structure",
+        description:
+          "Subject, level, category, favorites, and archive state make the prompt collection easier to use than an unstructured document folder.",
+      },
+      {
+        title: "Filterable workspace rhythm",
+        description:
+          "Tabs and filters keep the same dataset useful across overview, active, favorites, and archived views.",
+      },
+      {
+        title: "Protected personal access",
+        description:
+          "Protected routes and safe fallback behavior keep one user’s prompt library private and stable.",
+      },
+    ],
+  },
+  workflow: {
+    eyebrow: "How it works",
+    title: "Move from prompt capture to a reliable teaching library",
+    lead:
+      "The workflow is designed for one educator or prompt curator managing a prompt set that stays useful over time.",
+    steps: [
+      {
+        title: "Create the prompt",
+        description:
+          "Start in the protected workspace and save the teaching prompt you want to keep in your personal library.",
+      },
+      {
+        title: "Organize the collection",
+        description:
+          "Use favorites, filters, tabs, and archive controls to shape the prompt set around what you need right now.",
+      },
+      {
+        title: "Open details for full review",
+        description:
+          "Use the detail route to edit or review the full prompt safely, then return to the workspace once the record is ready.",
+      },
+    ],
+  },
+  showcase: {
+    eyebrow: "Current product shape",
+    title: "Built for prompt organization, not prompt execution",
+    description:
+      "The landing copy stays aligned to the verified implementation: EduPrompt helps one authenticated user maintain a DB-backed teaching prompt library with favorites, archive state, filters, and detail review.",
+    bullets: [
+      "Good fit for educators organizing reusable prompts by subject, level, and category",
+      "Centered on manual prompt curation, favorite/archive control, and safe detail editing",
+    ],
+    calloutLabel: "Freeze truth",
+    calloutValue: "Manual prompt library only",
+  },
+  finalCta: {
+    title: "Start building a prompt library you can rely on",
+    description:
+      "Open the workspace, save the prompts properly, and keep the most useful teaching prompts easy to surface later.",
+    primaryCta: {
+      label: Astro.locals.isAuthenticated ? "Open Workspace" : "Sign in to Open",
+      href: startHref,
+    },
+    secondaryCta: {
+      label: "Review Features",
+      href: "#features",
+      variant: "ghost",
+    },
+  },
+};
 ---
 
-<AppShell title="EduPrompt | Ansiversa" description="Premium educator prompt library for everyday teaching.">
-  <AvMiniAppBar />
-
-  <section class="py-20">
-    <AvContainer size="wide" className="px-4 grid lg:grid-cols-2 gap-10 items-center">
-      <div class="space-y-5">
-        <p class="text-sm uppercase tracking-widest text-cyan-300">Ansiversa · Educator productivity</p>
-        <h1 class="text-4xl md:text-5xl font-semibold text-white leading-tight">Build a calm, organized prompt library for your classroom.</h1>
-        <p class="text-slate-300 text-lg">EduPrompt V1 keeps your teaching prompts structured by subject, level, and category—without clutter or complexity.</p>
-        <div class="flex gap-3">
-          <AvButton href="/app">Open Workspace</AvButton>
-        </div>
-      </div>
-
-      <AvCard variant="soft" className="p-6 space-y-4">
-        <h2 class="text-xl text-white font-semibold">What you can do in V1</h2>
-        <ul class="space-y-2 text-slate-300 list-disc list-inside">
-          <li>Create and edit educational prompts.</li>
-          <li>Organize by subject, level, and category.</li>
-          <li>Star favorites and archive old prompts.</li>
-          <li>Quickly search and filter your library.</li>
-        </ul>
-      </AvCard>
-    </AvContainer>
-  </section>
+<AppShell title={title} description={description}>
+  <LandingPageStandard content={landingContent} />
 </AppShell>
